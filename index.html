@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Virtual Sticker Album</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      background: linear-gradient(135deg, #fdfbfb, #ebedee, #e0f7fa, #ffe0f7);
+      background-size: 300% 300%;
+      animation: gradientShift 15s ease infinite;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      font-family: "Comic Sans MS", "Brush Script MT", cursive, sans-serif;
+    }
+
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .album-container {
+      position: relative;
+      transform: scale(1.2); 
+    }
+
+    .notebook {
+      position: relative;
+      left: -40px;
+      filter: drop-shadow(0 0 15px rgba(0,0,0,0.3));
+      width: 750px;
+    }
+
+    .sticky-note {
+      position: absolute;
+      top: 10px;
+      right: -50px;
+      width: 280px;
+      transform: rotate(2deg);
+      z-index: 5;
+    }
+
+    .sticker-area {
+      position: absolute;
+      top: 80px;
+      left: 70px;
+      width: 600px;
+      height: 460px;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .sticker {
+      position: absolute;
+      width: 120px;
+      height: 120px;
+      cursor: grab;
+      pointer-events: auto;
+      transition: filter 0.3s ease;
+    }
+
+    .sticker:hover {
+      filter: drop-shadow(0 0 15px rgba(255, 200, 255, 0.8)) brightness(1.1);
+    }
+
+    .sticker:active {
+      cursor: grabbing;
+    }
+
+    .resizer {
+      width: 15px;
+      height: 15px;
+      background: rgba(255, 182, 193, 0.8);
+      border: 2px solid white;
+      border-radius: 50%;
+      position: absolute;
+      right: -6px;
+      bottom: -6px;
+      cursor: se-resize;
+    }
+
+    .sticker .resizer,
+    .sticker .delete-btn {
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
+
+    .sticker:hover .resizer,
+    .sticker:hover .delete-btn {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .delete-btn {
+      width: 18px;
+      height: 18px;
+      position: absolute;
+      left: -6px;
+      bottom: -6px;
+      cursor: pointer;
+    }
+
+    .delete-btn img {
+      width: 100%;
+      height: 100%;
+    }
+
+    .add-btn, .nav-btn {
+      position: absolute;
+      top: 80px;
+      background: transparent;
+      border: none;
+      font-size: 22px;
+      font-family: "Comic Sans MS", "Brush Script MT", cursive;
+      cursor: pointer;
+      font-weight: bold;
+      color: #333;
+      z-index: 10;
+    }
+
+    .add-btn {
+      right: 35px;
+      font-size: 16px;
+      padding: 4px 10px;
+      height: 32px; /* <-- Set your desired height here */
+    }
+    .nav-btn { bottom: -40px; top: auto; }
+
+    .add-btn:hover, .nav-btn:hover {
+      text-decoration: underline wavy;
+      text-decoration-color: #ff6ec7;
+    }
+
+    input[type="file"] { display: none; }
+
+    /* coin counter */
+    .coin-counter {
+      position: absolute;
+      top: 15px;
+      right: 700px;
+      display: flex;
+      align-items: center;
+      font-size: 20px;
+      font-weight: bold;
+      color: #333;
+      z-index: 20;
+    }
+
+    .coin-counter img {
+      width: 30px;
+      height: 30px;
+      margin-right: 8px;
+    }
+
+    /* bookmark store */
+    .bookmark {
+      position: absolute;
+      top: 60px;
+      right: -120px;
+      width: 100px;
+      min-height: 320px;
+      background: linear-gradient(135deg, #ffe0f7 80%, #e0f7fa 100%);
+      border-radius: 30px 30px 40px 40px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 18px 8px 18px 8px;
+      z-index: 30;
+      border: 2px dashed #ff6ec7;
+    }
+
+    .bookmark-label {
+      font-size: 18px;
+      font-weight: bold;
+      color: #ff6ec7;
+      margin-bottom: 10px;
+      letter-spacing: 2px;
+      text-shadow: 0 1px 0 #fff;
+    }
+
+    .store-section {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .store-sticker {
+      width: 48px;
+      height: 48px;
+      background: transparent;
+      border-radius: 12px;
+      box-shadow: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      position: relative;
+      transition: transform 0.2s;
+    }
+    .store-sticker:hover {
+      transform: scale(1.12) rotate(-3deg);
+      box-shadow: 0 4px 16px rgba(255,110,199,0.18);
+    }
+    .store-price {
+      position: absolute;
+      bottom: -18px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 13px;
+      color: #ff6ec7;
+      background: none;
+      border-radius: 0;
+      padding: 0 4px;
+      box-shadow: none;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .store-price img {
+      width: 16px;
+      height: 16px;
+      margin-right: 2px;
+    }
+
+    .blind-box {
+      position: static;
+      width: 54px;
+      margin-bottom: 8px;
+      transition: transform 0.3s;
+      z-index: 1;
+      display: block;
+    }
+    .blind-box:hover {
+      transform: scale(1.1) rotate(-2deg);
+    }
+
+    .animated {
+      animation: coinBounce 0.6s ease;
+    }
+
+    @keyframes coinBounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .open-shop-btn {
+      position: absolute;
+      top: 120px;
+      right: 40px;
+      font-size: 16px;
+      padding: 4px 10px;
+      font-family: "Comic Sans MS", "Brush Script MT", cursive;
+      font-weight: bold;
+      color: #333;
+      background: transparent;
+      border: none;
+      z-index: 10;
+      cursor: pointer;
+      transition: text-decoration-color 0.2s;
+    }
+    .open-shop-btn:hover {
+      text-decoration: underline wavy;
+      text-decoration-color: #ff6ec7;
+    }
+
+    /* Popup styles */
+    #popupBox {
+      display:none;
+      position:fixed;
+      top:50%;
+      left:50%;
+      transform:translate(-50%,-50%);
+      background:rgba(255,255,255,0.95);
+      border-radius:24px;
+      box-shadow:0 8px 32px rgba(0,0,0,0.18);
+      padding:32px 28px 24px 28px;
+      z-index:9999;
+      text-align:center;
+      font-family:'Comic Sans MS','Brush Script MT',cursive;
+      font-size:20px;
+      color:#7c4dff;
+      animation: popShow 0.5s cubic-bezier(.68,-0.55,.27,1.55);
+    }
+
+    @keyframes popShow {
+      0% { transform: scale(0.7) translate(-50%,-50%); opacity:0; }
+      80% { transform: scale(1.1) translate(-50%,-50%); opacity:1; }
+      100% { transform: scale(1) translate(-50%,-50%); opacity:1; }
+    }
+  </style>
+</head>
+<body>
+      <h1 class="journal-title">✿ My Sticker Journal ✿</h1>
+
+  <div class="album-container">
+    <img src="https://st3.depositphotos.com/2452507/12601/v/450/depositphotos_126018738-stock-illustration-flat-design-opened-notepad-sketchbook.jpg" alt="Notebook" class="notebook">
+    <img src="C:/Users/sayur/Downloads/imgbin-paper-notebook-pink-notebook-uEW3vwh2dhmufyQgQg06x9NaU-removebg-preview.png" alt="Sticky Note" class="sticky-note">
+
+    <div class="sticker-area" id="stickerArea"></div>
+
+    <button class="add-btn" onclick="document.getElementById('fileInput').click()">♡ Add Sticker</button>
+    <button class="nav-btn" style="left:0" onclick="prevPage()">⟵ Prev</button>
+    <button class="nav-btn" style="right:0" onclick="nextPage()">Next ⟶</button>
+    <button class="open-shop-btn" onclick="toggleShop()">♡ Open Shop</button>
+
+    <input type="file" id="fileInput" accept="image/*">
+
+    <!-- coin counter -->
+    <div class="coin-counter">
+      <img src="https://www.iconpacks.net/icons/1/free-coin-icon-794-thumb.png" alt="coin">
+      <span id="coinCount">0</span>
+    </div>
+
+    <!-- BOOKMARK STORE -->
+    <img src="bookmark.png" 
+         alt="Bookmark" 
+         class="bookmark-img"
+         id="bookmarkImg"
+         style="position:absolute; top:130px; right:-200px; width:400px; height:470px; z-index:30; pointer-events:none; display:none;">
+
+    <div class="bookmark-store"
+         id="bookmarkStore"
+         style="position:absolute; top:150px; right:-90px; width:180px; height:350px; z-index:31; display:none; flex-direction:column; align-items:center; pointer-events:auto;">
+      <div class="store-section" style="gap:28px; margin-top:30px;">
+        <div style="display: flex; flex-direction: column; align-items: center; margin-top:18px;">
+          <img src="mystery-box.png" class="blind-box" onclick="openBlindBox()" alt="blind box" style="width:54px;">
+        </div>
+        <div class="store-sticker" onclick="buySticker(0)" style="width:44px; height:44px;">
+          <img src="https://cdn-icons-png.flaticon.com/512/742/742751.png" style="width:38px;height:38px;" alt="sticker1">
+          <div class="store-price" style="background:none; color:#7c4dff; box-shadow:none; position:static; font-size:15px;">
+            <img src="https://www.iconpacks.net/icons/1/free-coin-icon-794-thumb.png" alt="coin" style="width:16px;">1
+          </div>
+        </div>
+        <div class="store-sticker" onclick="buySticker(1)" style="width:44px; height:44px;">
+          <img src="https://cdn-icons-png.flaticon.com/512/616/616408.png" style="width:38px;height:38px;" alt="sticker2">
+          <div class="store-price" style="background:none; color:#7c4dff; box-shadow:none; position:static; font-size:15px;">
+            <img src="https://www.iconpacks.net/icons/1/free-coin-icon-794-thumb.png" alt="coin" style="width:16px;">2
+          </div>
+        </div>
+        <div class="store-sticker" onclick="buySticker(2)" style="width:44px; height:44px;">
+          <img src="https://cdn-icons-png.flaticon.com/512/764/764512.png" style="width:38px;height:38px;" alt="sticker3">
+          <div class="store-price" style="background:none; color:#7c4dff; box-shadow:none; position:static; font-size:15px;">
+            <img src="https://www.iconpacks.net/icons/1/free-coin-icon-794-thumb.png" alt="coin" style="width:16px;">3
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- END BOOKMARK STORE -->
+  </div>
+
+  <!-- Popup Box -->
+  <div id="popupBox" style="
+    display:none;
+    position:fixed;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    background:rgba(255,255,255,0.95);
+    border-radius:24px;
+    box-shadow:0 8px 32px rgba(0,0,0,0.18);
+    padding:32px 28px 24px 28px;
+    z-index:9999;
+    text-align:center;
+    font-family:'Comic Sans MS','Brush Script MT',cursive;
+    font-size:20px;
+    color:#7c4dff;
+    animation: popShow 0.5s cubic-bezier(.68,-0.55,.27,1.55);
+  ">
+    <img id="popupImg" src="" alt="You got a sticker!" style="width:120px; height:120px; margin-bottom:18px; border-radius:16px; box-shadow:0 2px 12px #ff6ec7;">
+    <div id="popupMsg" style="margin-bottom:18px;"></div>
+    <button onclick="closePopup()" style="font-size:18px; padding:6px 18px; border-radius:8px; border:none; background:#ff6ec7; color:#fff; font-family:'Comic Sans MS','Brush Script MT',cursive; cursor:pointer;">OK!</button>
+  </div>
+
+  <script>
+    const fileInput = document.getElementById('fileInput');
+    const stickerArea = document.getElementById('stickerArea');
+    const coinCountEl = document.getElementById('coinCount');
+
+    let pages = [[]];
+    let currentPage = 0;
+    let coinCount = 0;
+
+    // Store sticker data: [img, price]
+    const storeStickers = [
+      ["https://cdn-icons-png.flaticon.com/512/742/742751.png", 1],
+      ["https://cdn-icons-png.flaticon.com/512/616/616408.png", 2],
+      ["https://cdn-icons-png.flaticon.com/512/764/764512.png", 3]
+    ];
+
+    const blindPool = [
+      "https://cdn-icons-png.flaticon.com/512/742/742751.png",
+      "https://cdn-icons-png.flaticon.com/512/616/616408.png",
+      "https://cdn-icons-png.flaticon.com/512/764/764512.png"
+    ];
+
+    function updateCoins() {
+      coinCountEl.textContent = coinCount;
+      if (!coinCountEl.parentElement.classList.contains('animated')) {
+        coinCountEl.parentElement.classList.add('animated');
+        setTimeout(() => {
+          coinCountEl.parentElement.classList.remove('animated');
+        }, 600);
+      }
+    }
+
+    fileInput.addEventListener('change', (event) => {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const wrapper = createSticker(e.target.result);
+        stickerArea.appendChild(wrapper);
+        pages[currentPage].push(wrapper);
+        coinCount++;
+        updateCoins();
+      };
+      reader.readAsDataURL(file);
+    });
+
+    function createSticker(src) {
+      const wrapper = document.createElement('div');
+      wrapper.classList.add('sticker');
+      wrapper.style.top = "20px";
+      wrapper.style.left = "20px";
+
+      const img = document.createElement('img');
+      img.src = src;
+      img.style.width = "100%";
+      img.style.height = "100%";
+      img.style.objectFit = "contain";
+      img.draggable = false;
+
+      const resizer = document.createElement('div');
+      resizer.classList.add('resizer');
+
+      const del = document.createElement('div');
+      del.classList.add('delete-btn');
+      del.innerHTML = '<img src="https://cdn-icons-png.flaticon.com/512/1214/1214428.png" alt="delete">';
+      del.onclick = () => {
+        wrapper.remove();
+        pages[currentPage] = pages[currentPage].filter(s => s !== wrapper);
+      };
+
+      wrapper.appendChild(img);
+      wrapper.appendChild(resizer);
+      wrapper.appendChild(del);
+
+      makeDraggable(wrapper);
+      makeResizable(wrapper, resizer);
+
+      return wrapper;
+    }
+
+    function makeDraggable(el) {
+      let offsetX, offsetY, isDragging = false;
+
+      el.addEventListener('mousedown', (e) => {
+        if (e.target.classList.contains('resizer') || e.target.classList.contains('delete-btn') || e.target.tagName === 'IMG' && e.target.parentElement.classList.contains('delete-btn')) return;
+        isDragging = true;
+        const rect = el.getBoundingClientRect();
+        const areaRect = stickerArea.getBoundingClientRect();
+        offsetX = e.clientX - rect.left;
+        offsetY = e.clientY - rect.top;
+
+        const onMove = (ev) => {
+          if (!isDragging) return;
+          const areaRect = stickerArea.getBoundingClientRect();
+          let newLeft = ev.clientX - areaRect.left - offsetX;
+          let newTop = ev.clientY - areaRect.top - offsetY;
+
+          newLeft = Math.max(0, Math.min(newLeft, areaRect.width - el.offsetWidth));
+          newTop = Math.max(0, Math.min(newTop, areaRect.height - el.offsetHeight));
+
+          el.style.left = newLeft + "px";
+          el.style.top = newTop + "px";
+        };
+
+        const onUp = () => {
+          isDragging = false;
+          document.removeEventListener('mousemove', onMove);
+          document.removeEventListener('mouseup', onUp);
+        };
+
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
+      });
+    }
+
+    function makeResizable(el, handle) {
+      let isResizing = false;
+      let startX, startY, startWidth, startHeight;
+
+      handle.addEventListener('mousedown', (e) => {
+        e.stopPropagation();
+        isResizing = true;
+        startX = e.clientX;
+        startY = e.clientY;
+        startWidth = el.offsetWidth;
+        startHeight = el.offsetHeight;
+
+        const onMove = (ev) => {
+          if (!isResizing) return;
+          let newWidth = startWidth + (ev.clientX - startX);
+          let newHeight = startHeight + (ev.clientY - startY);
+          newWidth = Math.max(50, newWidth);
+          newHeight = Math.max(50, newHeight);
+
+          const areaRect = stickerArea.getBoundingClientRect();
+          const elRect = el.getBoundingClientRect();
+          const left = elRect.left - areaRect.left;
+          const top = elRect.top - areaRect.top;
+
+          if (left + newWidth > areaRect.width) newWidth = areaRect.width - left;
+          if (top + newHeight > areaRect.height) newHeight = areaRect.height - top;
+
+          el.style.width = newWidth + "px";
+          el.style.height = newHeight + "px";
+        };
+
+        const onUp = () => {
+          isResizing = false;
+          document.removeEventListener('mousemove', onMove);
+          document.removeEventListener('mouseup', onUp);
+        };
+
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
+      });
+    }
+
+    function renderPage() {
+      stickerArea.innerHTML = '';
+      pages[currentPage].forEach(sticker => stickerArea.appendChild(sticker));
+    }
+
+    function nextPage() {
+      if (!pages[currentPage + 1]) pages.push([]);
+      currentPage++;
+      renderPage();
+    }
+
+    function prevPage() {
+      if (currentPage > 0) {
+        currentPage--;
+        renderPage();
+      }
+    }
+
+    function openBlindBox() {
+      if (coinCount < 3) {
+        alert("Not enough coins! Upload stickers to earn more.");
+        return;
+      }
+      coinCount -= 3;
+      updateCoins();
+      const randomImg = blindPool[Math.floor(Math.random() * blindPool.length)];
+      const sticker = createSticker(randomImg);
+      stickerArea.appendChild(sticker);
+      pages[currentPage].push(sticker);
+      showPopup(randomImg, "You got a new sticker!");
+    }
+
+    function buySticker(idx) {
+      const [img, price] = storeStickers[idx];
+      if (coinCount < price) {
+        alert("Not enough coins!");
+        return;
+      }
+      coinCount -= price;
+      updateCoins();
+      const sticker = createSticker(img);
+      stickerArea.appendChild(sticker);
+      pages[currentPage].push(sticker);
+    }
+
+    function toggleShop() {
+      const bookmarkImg = document.getElementById('bookmarkImg');
+      const bookmarkStore = document.getElementById('bookmarkStore');
+      const isVisible = bookmarkImg.style.display === 'block';
+      bookmarkImg.style.display = isVisible ? 'none' : 'block';
+      bookmarkStore.style.display = isVisible ? 'none' : 'flex';
+    }
+
+    function showPopup(imgSrc, msg) {
+      const popupBox = document.getElementById('popupBox');
+      const popupImg = document.getElementById('popupImg');
+      const popupMsg = document.getElementById('popupMsg');
+      popupImg.src = imgSrc;
+      popupMsg.textContent = msg;
+      popupBox.style.display = 'block';
+    }
+
+    function closePopup() {
+      document.getElementById('popupBox').style.display = 'none';
+    }
+
+    updateCoins();
+    
+  </script>
+  
+</body>
+</html>

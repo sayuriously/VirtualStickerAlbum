@@ -139,7 +139,7 @@
 
     input[type="file"] { display: none; }
 
-    /* coin counter */
+    
     .coin-counter {
       position: absolute;
       top: 15px;
@@ -158,7 +158,7 @@
       margin-right: 8px;
     }
 
-    /* bookmark store */
+    
     .bookmark {
       position: absolute;
       top: 60px;
@@ -274,7 +274,7 @@
       text-decoration-color: #ff6ec7;
     }
 
-    /* Popup styles */
+    
     #popupBox {
       display:none;
       position:fixed;
@@ -298,6 +298,7 @@
       80% { transform: scale(1.1) translate(-50%,-50%); opacity:1; }
       100% { transform: scale(1) translate(-50%,-50%); opacity:1; }
     }
+    /*setup ends, now just need to add JS*/
   </style>
 </head>
 <body>
@@ -316,13 +317,13 @@
 
     <input type="file" id="fileInput" accept="image/*">
 
-    <!-- coin counter -->
+
     <div class="coin-counter">
       <img src="https://www.iconpacks.net/icons/1/free-coin-icon-794-thumb.png" alt="coin">
       <span id="coinCount">0</span>
     </div>
 
-    <!-- BOOKMARK STORE -->
+    
     <img src="bookmark.png" 
          alt="Bookmark" 
          class="bookmark-img"
@@ -356,10 +357,10 @@
         </div>
       </div>
     </div>
-    <!-- END BOOKMARK STORE -->
+    
   </div>
 
-  <!-- Popup Box -->
+ 
   <div id="popupBox" style="
     display:none;
     position:fixed;
@@ -391,7 +392,7 @@
     let currentPage = 0;
     let coinCount = 0;
 
-    // Store sticker data: [img, price]
+   
     const storeStickers = [
       ["https://cdn-icons-png.flaticon.com/512/742/742751.png", 1],
       ["https://cdn-icons-png.flaticon.com/512/616/616408.png", 2],
@@ -609,6 +610,6 @@
     updateCoins();
     
   </script>
-  
+
 </body>
 </html>

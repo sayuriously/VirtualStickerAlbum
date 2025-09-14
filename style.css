@@ -1,10 +1,9 @@
-/* Background animation */
+/* styling time! idk how to do scc but ima try lol */
 body {
   position: relative;
   min-height: 100vh;
   margin: 0;
   font-family: "Comic Sans MS", "Brush Script MT", cursive, sans-serif;
-  /* Animated gradient overlay */
   background: linear-gradient(135deg, #fdfbfb, #ebedee, #e0f7fa, #ffe0f7);
   background-size: 300% 300%;
   animation: gradientShift 15s ease infinite;
@@ -15,7 +14,7 @@ body::before {
   inset: 0;
   z-index: -1;
   background: url('bg.jpg') center center/cover no-repeat;
-  opacity: 0.25; /* <-- Make background very translucent */
+  opacity: 0.25;
   pointer-events: none;
 }
 @keyframes gradientShift {
@@ -24,7 +23,7 @@ body::before {
   100% { background-position: 0% 50%; }
 }
 
-/* Title */
+
 .journal-title {
   position: absolute;
   top: 20px;
@@ -39,7 +38,7 @@ body::before {
   to { transform: translateY(-8px); }
 }
 
-/* Notebook */
+
 .album-container {
   position: relative;
   transform: scale(1.1);
@@ -50,7 +49,6 @@ body::before {
   width: 750px;
 }
 
-/* Sticker Area */
 .sticker-area {
   position: absolute;
   top: 80px;
@@ -66,15 +64,16 @@ body::before {
   height: 120px;
   cursor: grab;
   pointer-events: auto;
-  border-radius: 0; /* <-- Remove rounding */
-  overflow: visible; /* <-- Show delete and resize buttons outside */
+  border-radius: 0; 
+  overflow: visible; 
   transition: transform 0.3s ease, filter 0.3s ease;
 }
 .sticker:hover {
   transform: scale(1.05) rotate(-1deg);
   filter: drop-shadow(0 0 15px rgba(255, 200, 255, 0.9));
 }
-/* Shine overlay */
+
+/* ok the shine is chopped but its something */
 .sticker::after {
   content: "";
   position: absolute;
@@ -99,7 +98,7 @@ body::before {
   to { transform: translateX(100%) rotate(25deg); }
 }
 
-/* Resizer + delete */
+
 .resizer {
   width: 15px;
   height: 15px;
@@ -116,7 +115,6 @@ body::before {
   height: 18px;
 }
 
-/* Buttons */
 .add-btn, .nav-btn, .open-shop-btn {
   background: transparent;
   border: none;
@@ -132,7 +130,7 @@ body::before {
   text-decoration: underline wavy #ff6ec7;
 }
 
-/* Coin Counter */
+
 .coin-counter {
   position: absolute;
   top: 15px;
@@ -142,10 +140,10 @@ body::before {
   font-size: 20px;
   font-weight: bold;
   color: #333;
-  background: none;        /* Remove background */
-  padding: 0;              /* Remove padding */
-  border-radius: 0;        /* Remove rounded corners */
-  box-shadow: none;        /* Remove shadow */
+  background: none;       
+  padding: 0;              
+  border-radius: 0;        
+  box-shadow: none;        
 }
 .coin-counter img {
   width: 30px;
@@ -158,7 +156,7 @@ body::before {
   to { transform: rotate(360deg); }
 }
 
-/* Shop Bookmark */
+
 #bookmarkImg {
   position: absolute;
   top: 130px;
@@ -202,7 +200,7 @@ body::before {
   justify-content: center;
 }
 
-/* Blind Box Glow */
+
 .blind-box {
   width: 64px;
   margin-bottom: 10px;
@@ -213,7 +211,7 @@ body::before {
   to { filter: drop-shadow(0 0 14px #ff6ec7); }
 }
 
-/* Popup Box */
+
 #popupBox {
   display: none;
   position: fixed;
